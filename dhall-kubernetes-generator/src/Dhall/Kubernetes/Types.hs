@@ -36,6 +36,7 @@ data Definition = Definition
   { typ         :: Maybe Text
   , ref         :: Maybe Ref
   , format      :: Maybe Text
+  , enum        :: Maybe (Set Text)
   , description :: Maybe Text
   , items       :: Maybe Definition
   , properties  :: Maybe (Map ModelName Definition)
@@ -48,6 +49,7 @@ instance FromJSON Definition where
     typ         <- o .:? "type"
     ref         <- o .:? "$ref"
     format      <- o .:? "format"
+    enum        <- o .:? "enum"
     properties  <- o .:? "properties"
     required    <- o .:? "required"
     items       <- o .:? "items"

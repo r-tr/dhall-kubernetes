@@ -85,6 +85,8 @@ namespacedObjectFromImport _ = Nothing
 toTextLit :: Text -> Expr
 toTextLit str = Dhall.TextLit (Dhall.Chunks [] str)
 
+toTextTuple :: Text -> (Text, Maybe a)
+toTextTuple r = (r, Nothing)
 
 -- | Converts all the Swagger definitions to Dhall Types
 --   Note: we cannot do 1-to-1 conversion and we need the whole Map because
@@ -99,6 +101,8 @@ toTypes definitions = memo
       [ ("mapKey", Dhall.Text), ("mapValue", Dhall.Text) ]
     intOrString = Dhall.Union $ Dhall.Map.fromList $ fmap (second Just)
       [ ("Int", Dhall.Natural), ("String", Dhall.Text) ]
+    --enumList = Dhall.Union $ Dhall.Map.fromList $ fmap (second Just)
+    --  [ ("String", Dhall.Text) ]
 
     shouldBeRequired :: Maybe ModelName -> (Maybe FieldName, Expr) -> Bool
     shouldBeRequired maybeParent (maybeField, expr) = or
@@ -157,6 +161,8 @@ toTypes definitions = memo
         "object"  -> kvList
         "array"   | Just item <- items -> Dhall.App Dhall.List (convertToType Nothing item)
         "string"  | format == Just "int-or-string" -> intOrString
+        -- Cast a homogeneous string enum to a degenenerated dhall union of empty alternatives
+        "string"  |  Just set <- enum -> Dhall.Union $ Dhall.Map.fromList $ fmap (toTextTuple) $ Set.toList set
         "string"  -> Dhall.Text
         "boolean" -> Dhall.Bool
         "integer" -> Dhall.Natural
