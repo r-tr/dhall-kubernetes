@@ -9,7 +9,7 @@ import qualified Dhall.Format
 import qualified Dhall.Pretty
 import qualified Turtle
 
-import           Data.Aeson                            (decodeFileStrict)
+import           Data.Aeson                            (eitherDecodeFileStrict)
 import           Data.Foldable                         (for_)
 import           Data.Text                             (Text)
 import           System.Environment                    (getArgs)
@@ -46,10 +46,10 @@ main = do
   args <- getArgs
   Swagger{..} <- case args of
     [file] -> do
-      swaggerFile <- decodeFileStrict file
+      swaggerFile <- eitherDecodeFileStrict file
       case swaggerFile of
-        Nothing -> error "Unable to decode the Swagger file"
-        Just s  -> pure s
+        Left msg -> fail msg
+        Right s  -> pure s
     _ -> error "You need to provide a filename as first argument"
 
   -- Convert to Dhall types in a Map
